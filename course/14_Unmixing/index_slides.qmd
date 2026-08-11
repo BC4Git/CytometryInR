@@ -36,17 +36,23 @@ Welcome to the [fourteenth](/Schedule.qmd#unmixing-in-r) week of the Cytometry i
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 More importantly, we hope to crack open what to many in the commmunity is seen as a [black box](https://en.wikipedia.org/wiki/Black_box). By understanding the underlying mechanics operating behind the curtain, we can gain a greater appreciation of the elements involved in the unmixing process (and hopefully assist with contextualizing/troubleshooting any unmixing errors we might encounter in the future). 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 The goal of this [primary course walkthrough](/course/14_Unmixing/index.qmd) is focused on providing broad detailed look at the unmixing process. Additional details on unmixed .fcs file re-formatting are provided in a separate [bonus walk-through](/course/14_Unmixing/unmixing.qmd) for those that are interested. In the [upcoming week's primary walkthrough](/Schedule.qmd), we will cover how to systematically evaluate our unmixed .fcs files for unmixing errors, and make decisions on what signature variants to use for unmixing reattempts, etc. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -60,6 +66,8 @@ And with that, lets get started!
 :::
 :::
 
+---
+
 # Walk Through
 
 ::: {.fragment}
@@ -68,11 +76,15 @@ For unmixing, we work with raw full-stained .fcs files, so we will need to retri
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 In addition to our full-stained samples, we will need the [signature matrices](/course/SDY3080/SignatureMatrices.qmd) we derived from our unmixing controls (both single-colors and unstained) from the [previous walkthroughs](/course/SDY3080/SignatureMatrices.qmd). An important thing to note, we have not fully validated these signatures, so any unmixed .fcs files from today will likely have some unmixing errors. Since we plan to follow up in the [next session](/Schedule.qmd) on ways to evaluate how the different signatures included impacted our unmixing results, using these intermediate matrices should be fine for now. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -80,17 +92,23 @@ As always, you are also welcome to follow along using your own .fcs files. Main 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Consequently, small changes may need to be carried out to the existing code to account for these differences. If you get stuck, or want to share your solutions for different manufacturers instruments so that others can benefit, please post on the [Discussions](https://github.com/UMGCCCFCSR/CytometryInR/discussions) page, and we can help you navigate for your own respective instruments configuration. 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And with that, let's begin this journey into the blackhole that is spectral unmixing. 
 :::
 :::
+
+---
 
 ## Set Up
 
@@ -111,6 +129,8 @@ library(purrr)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With this done, we can designate the `file.path()` to the location of both our storage and output folders. 
@@ -129,6 +149,8 @@ OutputLocation <- file.path("outputs")
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With the storage location of our files established, we can then identify the .csv and .fcs files included in this week's dataset using `list.files()`.
@@ -144,6 +166,8 @@ csv_files
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -152,6 +176,8 @@ fcs_files
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -169,6 +195,8 @@ colnames(BeadSignatures)
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -176,6 +204,8 @@ head(BeadSignatures, 3)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 
@@ -187,6 +217,8 @@ colnames(CellSignatures)
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -195,11 +227,15 @@ head(CellSignatures, 3)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And with that, we have the main elements we will need for our unmixing. 
 :::
 :::
+
+---
 
 ## Planning
 
@@ -209,11 +245,15 @@ Before diving straight in, it is often worthwhile to strategize what we are tryi
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Over the last couple weeks, we have derived out [signature matrices](/course/SDY3080/SignatureMatrices.qmd) for our single-color controls (from both beads and cells). Similarly, we have an additional matrix that contains unstained signatures. These matrices in addition to the detector columns also contain metadata, in the form of the Fluorophore and Antigen columns. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -221,17 +261,23 @@ Separately, we have file.paths to the location of our individual raw .fcs files.
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 We consequently end up with a new matrix containing the calculated abundances of each fluorophore for a given cell. These in turn need to be swapped in for the `exprs()` slot within the "flowFrame" object. At this point, any corresponding changes to the `parameters()` and `keyword()` slots would need to be carried out, converting over the formatting from one typical of a raw .fcs file to that of an unmixed .fcs file. Some of these steps may overlap with the [Week 10](/course/10_Downsampling/concatenate.qmd) bonus material, so we may be able to reuse some of that code instead of writing from scratch. 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Lastly, we would then need to save our new .fcs file to a designated location. At which point, we can visualize it (to make sure no formatting mistakes were made in the coding process). If none are encountered, we would then be set so that [next time](/Schedule.qmd) we can start off by evaluating the unmixed .fcs file for unmixing errors that might affect the downstream analysis process. 
 :::
 :::
+
+---
 
 ## Loading FCS files
 
@@ -251,6 +297,8 @@ OldFashionedUnmix <- function(){
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 In terms of what should be our `OldFashionedUnmix()` function's first argument, at the end of the day, we would want to simply provide to our function a vector containing the `file.path()`'s to where our .fcs files, and then stand back and let the function handle the rest of the process. 
@@ -263,11 +311,15 @@ So we will need to set it up to iterate (using either `purrr`'s `map()` or `walk
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Additionally, to help our future-selves out when we forget what each argument does next month (or who are we kidding, maybe tomorrow), lets also write out the arguments documentation in the `roxygen2` skeleton, by providing the name after "\@param", followed by a short description of purpose. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -291,6 +343,8 @@ OldFashionedUnmix <- function(x){
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With our `OldFashionedUnmix()` function now created, we can evaluate the output of the code inside by running the code block below using the `purrr` packages `walk()` function to iterate through our vector of .fcs file paths. 
@@ -308,6 +362,8 @@ walk(.x=fcs_files, .f=OldFashionedUnmix)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As we proceed and build out the rest of the function, remember to re-run the code block to refresh `OldFashionedUnmix()` in the local environment, so that you can see the effect of the changes that are made. 
@@ -320,6 +376,8 @@ Next up, we will need to load the designated .fcs file into our local environmen
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As we encountered in [Week 05](/course/05_GatingSets/index.qmd#flowframe), there are two ways we can approach this, loading the file in as either a 'flowFrame' or a 'cytoframe' object. The main difference between these two versions are whether the object is loaded immediately into rapid access memory (RAM) or not (via a pointer to the location). 
@@ -331,6 +389,8 @@ As we encountered in [Week 05](/course/05_GatingSets/index.qmd#flowframe), there
 In the case of unmixing, we need access to the internals, are not planning to pre-gate, and are unmixing individual objects at a time. Because of this, lets use the `flowCore` packages `read.FCS()` function to load our raw .fcs file in directly as a `flowFrame()`. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -358,6 +418,8 @@ OldFashionedUnmix <- function(x){
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -371,11 +433,15 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Alright, we are getting back our [flowFrame](/course/03_InsideFCSFile/index.qmd) object as expected. We can now start gathering the actual components for the unmixing. 
 :::
 :::
+
+---
 
 ### Retrieving exprs values
 
@@ -406,6 +472,8 @@ OldFashionedUnmix <- function(x){
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -419,6 +487,8 @@ head(Exprs[[1]], 3) # [[1]] breaking out of the list object
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -448,6 +518,8 @@ OldFashionedUnmix <- function(x){
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -461,6 +533,8 @@ head(Exprs[[1]], 3) # [[1]] breaking out of the list object
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With this done, we will need to isolate the detector columns (snce it will be their values we will need for unmixing) from the other columns ("Time", "SSC", "FSC" and "SSC-B"). We will still want to retain these columns, as following unmixing we will need to add them back to our unmixed .fcs file so we can gate based off scatter. 
@@ -473,6 +547,8 @@ Rather than directly specifying which columns, we can use the `dplyr` packages `
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 However, for certain instruments or cases, there could be other columns we might want to retain. Rather than needing to modify the function directly, we can set up a second argument ("retainThese"), and provide a default value ("FSC|SSC|Time"). That way we retain the ability to easily modify the pattern to handle the edge cases, without needing to specify the values each time when the default suffices. 
@@ -484,6 +560,8 @@ However, for certain instruments or cases, there could be other columns we might
 Lets go ahead and add the argument and it's default value between the "()", and update the `roxygen2` documentation for this new argument (and what it does). We also need to list the two `dplyr` functions in the roxygen, and add the "dplyr::" before the respective functions in the code to avoid dependency issues. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -518,6 +596,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time"){
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -531,11 +611,15 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Alright, we have a generalized way to designate which columns need to kept outside of the unmixing (but later placed back). By adding an "!" to that line of codes `select()`, we can also gather the non-stashed columns (which will mainly be our detector columns of interest). 
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -573,6 +657,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time"){
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -586,17 +672,23 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 For the Cytek Aurora .fcs files in this example, this last line of code was sufficient to isolate the detector columns. However, this was in part to the instrument settings not having also acquired the "-H" or "-W" values for the various detectors. Since for some manufacturers instruments, these are also acquired by default, we maay need an additional step to designate whether the detector columns being selected for end in "-A", "-H", or "-W". 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 To do this, we could use another argument where we either select the variant we want, or designate the variants we want to exclude. For now, lets go with the exclude approach, externalizing this in the form of a third argument ("detectorExclude") with a default value of "-H|-W". 
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -642,6 +734,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -654,6 +748,8 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -705,6 +801,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -718,6 +816,8 @@ head(TheData, 3)
 
 :::
 
+---
+
 ## Loading signature matrix
 
 ::: {.fragment}
@@ -726,17 +826,22 @@ From our raw .fcs file, we have now retrieved `exprs()` values we will use for u
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Beyond providing the signature values that distinguish each fluorophore from each other, the signature matrix can also provides the source for the fluorophore and antigen names. Lets go ahead and load our signature matrix into our function via new argument ("SignatureData"). 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 We can also retain the flexibility of either providing a "data.frame" or a file.path to a ".csv" file through the use of a conditional statement ("if", "else", "else if") depending on the type of object provided to "SignatureData" 
 :::
 :::
+
 
 ::: {.fragment}
 
@@ -793,6 +898,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -809,6 +916,8 @@ head(Signatures, 3)
 
 :::
 
+---
+
 ### Separating Metadata
 
 ::: {.fragment}
@@ -817,12 +926,16 @@ With this accomplished, we can separate our character columns (containing our me
 :::
 :::
 
+---
+
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 We can then similarly separate out the character columns (being used for labeling) from the numeric columns (being used in the unmixing process). This can be accomplished through use of `select()`, `where()` and `is.numeric()` as we have previously encountered. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -884,6 +997,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -893,6 +1008,8 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix,
 
 :::
 
+---
+
 ### Normalizing Check
 
 ::: {.fragment}
@@ -900,6 +1017,8 @@ map(.x=fcs_files[1], .f=OldFashionedUnmix,
 Additionally, our signature retrieval functions can return either the raw values or normalized/scaled values that range from 0 to 1. For unmixing, we need the later. We can add an internal check through the use of another conditional statement, where if it is trigerred by the presence of a value greater than 1, it will proceed to normalize the values in the matrix before proceeding.
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -970,6 +1089,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -986,6 +1107,8 @@ head(Signatures, 3)
 
 :::
 
+---
+
 ### Dimensions Check
 
 ::: {.fragment}
@@ -994,6 +1117,7 @@ Before diving into unmixing, we should also make sure the number of detector col
 :::
 :::
 
+---
 
 ::: {.fragment}
 
@@ -1070,6 +1194,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -1088,13 +1214,19 @@ walk(.x=fcs_files[1], .f=OldFashionedUnmix,
 
 :::
 
+---
+
 ![](images/ErrorMismatch.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With this check now implemented and our starting components collected, we are ready to proceed with the actual unmixing. 
 :::
 :::
+
+---
 
 ## Ordinary Least Squares 
 
@@ -1110,11 +1242,15 @@ This process is often mediated via various least squares methods, the more frequ
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 To carry out its task, both the signature values and the sample values be in the "long" (more rows than columns) style format. Since both our data.frames are in the "wide" (more columns than rows) style format currently, we will need to swing/pivot them. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1202,6 +1338,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -1217,6 +1355,8 @@ head(Intermediate[[1]], 3)[,1:10]
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1309,6 +1449,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 The returned object is a named list, so using `names()` we can see what the returned elements consist of. 
@@ -1331,6 +1473,8 @@ names(TheUnmixedOutputs)
 
 :::
 
+---
+
 ### Coefficients
 
 ::: {.fragment}
@@ -1347,11 +1491,15 @@ dim(TheUnmixedOutputs$coefficients)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 So rows correspond to the calculated fluorophores, while the columns are the individual cells. Not the usual presentation for our data in an .fcs file, but we can transpose it back to regular shape in a bit. Also, this was a 29-fluorophore panel, so it looks like we missed a fluorophore (likely Zombie NIR as it wasn't present in the bead reference controls). 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1366,6 +1514,8 @@ head(TheUnmixedOutputs$coefficients, 3)[,1:20]
 ```
 
 :::
+
+---
 
 ### Residuals
 
@@ -1383,11 +1533,15 @@ dim(TheUnmixedOutputs$residuals)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 In this case, we have 64 rows, and 10000 columns, so these must track with the original detector columns that were provided. We will circle back and visualize these residuals shortly to get a better understanding of how they work. 
 :::
 :::
+
+---
 
 ### Intercept
 
@@ -1404,6 +1558,8 @@ TheUnmixedOutputs$intercept
 ```
 
 :::
+
+---
 
 ### qr
 
@@ -1422,6 +1578,8 @@ QR_components
 
 :::
 
+---
+
 ## Residuals
 
 ::: {.fragment}
@@ -1430,9 +1588,13 @@ So overall, its the "coefficient" values that we will need to grab, since these 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 First off, we need to a helper function `ResidualPlots()` to plot the underlying data.  This can take the `lsfit()` returned list and work from there, so we can set the only argument as "LeastSquaresFit". 
+:::
+:::
 
 ::: {.fragment}
 
@@ -1461,6 +1623,8 @@ ResidualPlots <- function(LeastSquaresList){
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1555,11 +1719,15 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And lets go ahead and return the plots for all the fcs files for comparison
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -1569,17 +1737,27 @@ And lets go ahead and return the plots for all the fcs files for comparison
 # Using [1] to subset for the first file in the vector
 
 ThePlots <- map(.x=fcs_files, .f=OldFashionedUnmix, SignatureData=BeadSignatures)
+```
+
+:::
+
+---
+
+```{r}
+#| echo: FALSE
 
 ThePlots
 ```
 
-:::
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Alright, so in this case (where we forgot to include our Zombie NIR viability dye and unstained signatures in the reference matrix), the place where we see the most leftover residuals (signal that didn't fit into the calculation) occurs in roughly the same locations where those fluorophores are found. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1601,6 +1779,8 @@ Zombie <- AlternateCellSignatures |>
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And lets first add back the Zombie signature to the beads signature matrix, and compare vs. the previous residual plot when it wasn't included
@@ -1617,6 +1797,8 @@ TheAlternatePlots <- map(.x=fcs_files, .f=OldFashionedUnmix, SignatureData=Updat
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 So before
@@ -1631,6 +1813,8 @@ plotly::ggplotly(ThePlots[[1]])
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And after
@@ -1644,6 +1828,8 @@ plotly::ggplotly(TheAlternatePlots[[1]])
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1661,6 +1847,8 @@ TheAlternatePlots2 <- map(.x=fcs_files, .f=OldFashionedUnmix, SignatureData=Upda
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Before with Zombie
@@ -1674,6 +1862,8 @@ plotly::ggplotly(TheAlternatePlots[[1]])
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1689,11 +1879,15 @@ plotly::ggplotly(TheAlternatePlots2[[1]])
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Some shifts across the board, but the big dramatic shift in residuals was when we accounted for the previously missing Zombie NIR. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -1711,6 +1905,8 @@ NoBUV805residuals <- map(.x=fcs_files, .f=OldFashionedUnmix, SignatureData=NoBUV
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -1719,17 +1915,23 @@ plotly::ggplotly(NoBUV805residuals[[1]])
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As you can start to see, even though not the main output we need from `lsfit()`, the residual output can be quite useful in determining whether all the signal was properly accounted for in the signature matrix or not (which is why other more complicated unmixing methods take advantage of it). 
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Before we turn our focus back to the coefficients, (i.e., our unmixed outputs that were of our main reason for being here), lets add one more argument that would allow us to get back the `ResidualPlots()` if we wanted to in the future. We can call this argument "returnType", setting the default to "fcs", but also specifying a "residual" condition that return these plots if requested.  
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -1823,6 +2025,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -1833,11 +2037,21 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 ThePlots <- map(.x=fcs_files, .f=OldFashionedUnmix,
  SignatureData=BeadSignatures, returnType="residuals")
+```
 
+:::
+
+---
+
+::: {.fragment}
+
+```{r}
 ThePlots[1]
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 
@@ -1855,6 +2069,8 @@ head(TheUnmixedList$coefficients, 3)[,1:20]
 
 :::
 
+---
+
 ## Reassembly
 
 ::: {.fragment}
@@ -1862,6 +2078,9 @@ head(TheUnmixedList$coefficients, 3)[,1:20]
 Alright, back to our main reason for being here, the coefficients, i.e. our unmixed data, that now that we have derived we need to change back to a wider format more typical of an .fcs file. We can reverse down this route we earlier traveled by once again transposing (`t()`)
 :::
 :::
+
+---
+
 
 ::: {.fragment}
 
@@ -1958,6 +2177,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And before we go further, lets make sure we keep the updated signature matrix with both Zombie NIR and Unstained (ideally reorganized in correct sequence, and unstained renamed to AF). 
@@ -1971,6 +2192,8 @@ UpdatedCellReferences |> pull(Fluorophore)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 
@@ -1995,6 +2218,8 @@ tail(UpdatedBeadReferences, 5)
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -2010,11 +2235,15 @@ head(Intermediate[[1]], 3)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 So we are now in the wide format, which is expected by `exprs()`. However, we don't have any `colnames()`, so its time to overwrite this a vector of the Fluorophore names. For Cytek Aurora instruments, the fluorophore names typically have a designated letter ("-A") appended at the end, giving the characteristic display seen in many unmixed .fcs files (FITC-A, etc.). 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -2123,6 +2352,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -2137,6 +2368,8 @@ head(Intermediate[[1]], 3)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -2249,6 +2482,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -2264,11 +2499,15 @@ head(Intermediate[[1]], 3)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And with that, congratulations, we now have our unmixed data in a format that can be returned to the `exprs()` slot. 
 :::
 :::
+
+---
 
 ### UnmixInternal Extravaganza
 
@@ -2285,11 +2524,15 @@ In this case, instead of creating a new .fcs file entirely from scratch, we need
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Since there are multiple moving pieces, this is the job for a nested internal function. For anyone who nerds out about .fcs file internals, you can find the additional details here in this [bonus walkthrough](/course/14_Unmixing/unmixing.qmd). For the majority who would rather not, the final function can be found in the code-chunk below (as well as in a ".R" file in this week's R folder for future use). 
 :::
 :::
+
+---
 
 
 ::: {.fragment}
@@ -2547,6 +2790,8 @@ UnmixedParameterUpdate <- function(OldParameters, NewExprs){
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And with that, add the line for `UnmixInternal()` into `OldFashionedUnmix()`, and see if it returns a properly formatted flowFrame. 
@@ -2661,6 +2906,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -2676,11 +2923,15 @@ EndGame
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And with that, we are in the final stretch!
 :::
 :::
+
+---
 
 ## Final Push
 
@@ -2690,6 +2941,8 @@ With `UnmixInternal()` now taking our "Unmixed Fluorophore" "data.frame", and re
 :::
 :::
 
+---
+
 ### Renaming
 
 ::: {.fragment}
@@ -2697,6 +2950,8 @@ With `UnmixInternal()` now taking our "Unmixed Fluorophore" "data.frame", and re
 For renaming, lets give the option to rename on the basis of up to two existing keywords (handled via a new "sample.name" argument), as well as an "addon" argument that can be used to append "_Unmixed" before ".fcs" in the name. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -2827,6 +3082,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -2842,6 +3099,8 @@ EndGame
 
 :::
 
+---
+
 ## Saving
 
 ::: {.fragment}
@@ -2849,6 +3108,8 @@ EndGame
 And last, but definitely not least, we need to designate where to store the file. We can copy in some of the previous code we used as part of [Week 10](/course/10_Downsampling/index.qmd) to simplify this process.  
 :::
 :::
+
+---
 
 ::: {.fragment}
 
@@ -2988,6 +3249,8 @@ OldFashionedUnmix <- function(x, retainThese="FSC|SSC|Time",
 
 :::
 
+---
+
 ::: {.fragment}
 
 ```{r}
@@ -3003,19 +3266,27 @@ EndGame <- map(.x=fcs_files[1], .f=OldFashionedUnmix,
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And if we check our designated output location...
 :::
 :::
 
+---
+
 ![](images/OutputLocation.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Wooh! We have the .fcs file. 
 :::
 :::
+
+---
 
 ## Evaluation
 
@@ -3025,11 +3296,19 @@ Alright, moment of truth. Let's open it in either [Floreada.io](/course/00_Flore
 :::
 :::
 
+---
+
 ![](images/01_FloreadaList.png)
+
+---
 
 ![](images/02_Scatter.png)
 
+---
+
 ![](images/03_TcellSubsets.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -3043,6 +3322,8 @@ As mentioned [earlier](/course/14_Unmixing/index.qmd#planning), we used a signat
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 We will get to this in the next primary walkthrough, but for now, the main tool in our unmixing arsenal is now set up to handle whichever optimized signature matrix we ultimately decide to provide it with. 
@@ -3055,6 +3336,8 @@ Likewise, beyond using OLS, there are other methods via which we can also unmix.
 :::
 :::
 
+---
+
 # Take Away
 
 ::: {.fragment}
@@ -3063,11 +3346,15 @@ In this walk-through, we have culminated some of the elements we have been build
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As you saw from the process, the main elements involved are actually processing the data needed to unmix, and after unmix, formatting to prepare the unmixed .fcs file with the new columns. The actual unmixing function at the heart is rather swapable. Likewise, it is possible to swap this step out entirely for faster implementations in lower-level programming languages like Fortran, C++ and Rust which is what several R packages do behind the scenes. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -3075,32 +3362,32 @@ Due to a conference break, we will resume the primary material in a couple weeks
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Until then, cheers! We are now half way through the original conception of our course. 
 :::
 :::
 
+---
+
 ![](images/TakeAway1.jpg)
+
+---
 
 
 # Additional Resources
 
 [Mathematics of spectral unmixing │Peter Mage │ Babraham Institute Spectral Symposium 2022](https://youtu.be/GozDzpuu3Ok?si=lpO3W6GQ84qPH6Lo)
 
----
-
 [CytoBytes: Spectral cytometry have you feeling all mixed up? Let's get unmixed!](https://youtu.be/kqc700kBtHg?si=XnAwe4pE3wVd9l48)
-
----
 
 [ChUG Cytometry Presents: Introduction to Spectral Unmixing](https://www.youtube.com/live/PbJXMBpaoQk?si=wm5TZbn6CZviKbrE)
 
 ---
 
 [A comparison of spectral unmixing to conventional compensation for the calculation of fluorochrome abundances from flow cytometric data](https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.24669)
-
----
 
 [Generalized unmixing model for multispectral flow cytometry utilizing nonsquare compensation matrices](https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.22272)
 

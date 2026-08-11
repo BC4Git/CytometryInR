@@ -24,6 +24,8 @@ For the YouTube livestream schedule, see [here](https://www.youtube.com/@cytomet
 
 For screen-shot slides, click [here]()
 
+---
+
 ![](/images/YouTubeHex.png){width="50%"}
 
 <br>
@@ -38,6 +40,8 @@ There are different ways to unmix spectral flow cytometry data. [TRU-OLS](https:
 :::
 :::
 
+---
+
 ## Logistics
 
 ::: {.fragment}
@@ -46,6 +50,8 @@ It is implemented in the [Julia](https://julialang.org/) programming language. S
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 - We will need to retrieve the information we need for unmixing from the raw .fcs files in R
@@ -53,6 +59,8 @@ It is implemented in the [Julia](https://julialang.org/) programming language. S
 - After unmixing has been carried out, return these outputs to R, and integrate them back into a properly formatted .fcs file
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -66,11 +74,15 @@ If we manage to get these three goals accomplished, we will be able to unmix our
 :::
 :::
 
+---
+
 ## Method
 
 :::{.callout-note}
 The following notes about TRU-OLS arose as part of a [Cytometry Discord](https://www.reddit.com/r/flowcytometry/comments/1dccpjb/announcing_the_flow_cytometry_discord_server/) discussion thread within the "data" channel on August 25, 2025 discussing the released [paper](https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.24957). As a community "Journal Club", some important details may have been missed. All screenshots (and badly hand-scrawled notes) originate from the paper figures. The thread is reposted below with minimal editing. 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -78,7 +90,11 @@ Background: As we increase number of markers in the unmixing matrix, variance co
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/Spread.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -86,7 +102,11 @@ The way TRU-OLS seems to work relies on the unmixing controls (single color and 
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/Cutofff.webp)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -94,7 +114,11 @@ Consequently, for the full-stained sample, each cell is initially unmixed. If th
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/BehindScenes.webp)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -102,7 +126,11 @@ Finally, the "irrelevant" fluorophores on the re-unmixed cell can be either set 
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/ReshapingNegative.webp)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -110,7 +138,11 @@ When enumerating how many markers were retained for the individual re-unmixing, 
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/RelevantDyes.webp)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -118,7 +150,11 @@ In addition to removing all events below the cutoffs, the removal of "irrelevant
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/Bermuda.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -126,13 +162,19 @@ The approach makes the most difference on cells where there wasn't much marker c
 :::
 :::
 
+---
+
 ![](images/DiscordWalkthrough/Results.webp)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 My outstanding questions is one, if we are depending on the positive peaks remaining in the same place based on the reference, how does this work for cells across multiple individuals in practice. Likewise, I will need to play around with more dim population data before I can vouch haven't also thrown the baby out with bathwater. With that said, I like it. 
 :::
 :::
+
+---
 
 # Walk-through
 
@@ -144,6 +186,8 @@ Before getting started, let's make sure that both the Julia programming language
 :::
 :::
 
+---
+
 ### Installing Julia
 
 ::: {.fragment}
@@ -151,6 +195,8 @@ Before getting started, let's make sure that both the Julia programming language
 Since how you install [Julia](https://julialang.org/) will vary depending on your computer [operating system](/course/00_WorkstationSetup/index.qmd), please see these [instructions](/course/community/TRU-OLS/InstallingJulia.qmd). Once Julia has been successfully installed, please return and proceed to the next step. 
 :::
 :::
+
+---
 
 ### Downloading TRU-OLS
 
@@ -160,7 +206,11 @@ As of the moment, TRU-OLS is available via [GitHub](https://github.com/De-Novo-R
 :::
 :::
 
+---
+
 ![](images/000_ForkIt.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -168,7 +218,11 @@ After forking the project to your own GitHub account, copy the url, open up [Pos
 :::
 :::
 
+---
+
 ![](images/0000_NewFolderFromGit.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -176,13 +230,19 @@ Paste in the url to your forked version of TRU-OLS, and proceed with the downloa
 :::
 :::
 
+---
+
 ![](images/0000_FromGit.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Following completion, open the new project folder inside Positron. 
 :::
 :::
+
+---
 
 ### Activating TRU-OLS
 
@@ -191,6 +251,8 @@ Following completion, open the new project folder inside Positron.
 To begin using TRU-OLS, just like any R package, we are going to need to make sure the required dependencies are installed. These are documented inside the "Manifest.toml" file. To get started, proceed to your **terminal tab** and run the following line of Julia code
 :::
 :::
+
+---
 
 ::: {.fragment}
 ```{r}
@@ -202,7 +264,11 @@ julia --project=.
 
 :::
 
+---
+
 ![](images/0000_LaunchProject.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -210,7 +276,11 @@ The Julia splash screen will then be displayed within the terminal window
 :::
 :::
 
+---
+
 ![](images/0000_JuliaWelcome.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -229,7 +299,11 @@ Pkg.instantiate()
 
 :::
 
+---
+
 ![](images/0000_JuliaInstantiate.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -237,7 +311,11 @@ The installation of the required Julia packages will then proceed, with the stat
 :::
 :::
 
+---
+
 ![](images/0000_ProgressBar.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -245,7 +323,11 @@ In my attempt to install the dependencies, I ended up with an error when install
 :::
 :::
 
+---
+
 ![](images/0000_JuliaErrror.png)
+
+---
 
 ::: {.fragment}
 ```{r}
@@ -257,13 +339,19 @@ err
 
 :::
 
+---
+
 ![](images/0000_DependencyError.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Similar to when we encounter errors installing an R package, we can apply those same troubleshooting skills in this context. First glancing at the "Manifest.toml" file, the original manifest list the Julia version 1.8.5. In my case, my installed Julia version was more recent (1.12.6), suggesting we likely have a dependency clash due to the older version listed in the manifest. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -283,7 +371,11 @@ Pkg.instantiate()
 
 :::
 
+---
+
 ![](images/0000_VersionConflict.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -303,7 +395,11 @@ Pkg.resolve()
 
 :::
 
+---
+
 ![](images/0000_PkgInstantiate_Resolve.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -317,19 +413,26 @@ Checking the Source control tab in the actions bar, and clicking on the "Manifes
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Once this was done, I saved my changes to the files, staged them to version control, wrote a short commit message, before pushing everything from my local fork back to GitHub. This prevents the need to repeat the troubleshooting process next time I needed to set TRU-OLS up on another computer in the future. 
 :::
 :::
 
+---
+
 ## Dataset
+
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 For this walkthrough, the spectral flow cytometry .fcs files being used were generated in 2025 as part of the yearly [5-day training workshop](https://umgccfcss.github.io/BISCC_2025/Day1_5L.html) here at [UMGCCC FCSR](https://www.medschool.umaryland.edu/cibr/core/umgccc_flow/). The panel consisted of 5 markers (CD45, CD3, CD4, CD8 and Viability). This panel was used to stain mouse splenocytes, which were then acquired on a 5-laser Cytek Aurora. 
 :::
 :::
+
+---
 
 ## Loading FCS files to GatingSet
 
@@ -338,6 +441,8 @@ For this walkthrough, the spectral flow cytometry .fcs files being used were gen
 With both Julia and TRU-OLS now installed, switch back to the R project folder that you will be primarily be working in for unmixing.Once there, you will need to load your unmixing controls and full-stained samples into a GatingSet. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -357,6 +462,8 @@ library(JuliaCall)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Next off, specify the storage location of the .fcs files, and also the location of the folder you want any unmixed fcs files to be saved to.
@@ -374,6 +481,8 @@ OutputLocation <- file.path("outputs")
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -394,11 +503,15 @@ SFC_GatingSet <- GatingSet(SFC_cytoset)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As we will be working with raw .fcs files for the unmxing process, **we do not need to transform**, as we need signatures retrieved from the underlying data to appear in their normal shapes.
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -421,6 +534,8 @@ UnmixingControl_GS <- subset(SFC_GatingSet, name != "Full-Stained2_scatter.fcs" 
 
 :::
 
+---
+
 ## Signature Matrix
 
 ::: {.fragment}
@@ -428,6 +543,8 @@ UnmixingControl_GS <- subset(SFC_GatingSet, name != "Full-Stained2_scatter.fcs" 
 To facilitate this example, we will use the `Luciernaga_SingleColors()` function from the `Luciernaga` package to retrieve the signatures from our single-color controls. For more information, please see the [vignette](https://davidrach.github.io/Luciernaga/articles/Unmixing.html#luciernaga_singlecolors).
 :::
 :::
+
+---
 
 
 ::: {.fragment}
@@ -455,12 +572,16 @@ SCs <- map(.x=UnmixingControl_GS, .f=Luciernaga_SingleColors, sample.name="TUBEN
 
 :::
 
+---
+
 ::: {.fragment}
 ```{r}
 SCs
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -478,18 +599,34 @@ plots <- map(.x=UnmixingControl_GS, .f=Luciernaga_SingleColors, sample.name="TUB
 
 :::
 
+---
+
 ::: {.fragment}
 ```{r}
-plots
+plots[1]
 ```
 
 :::
+
+---
+
+::: {.fragment}
+```{r}
+plots[2]
+```
+
+:::
+
+---
+
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 In this case, the signatures are close enough to the reference that we can proceed (the rough edges are likely result of the datasets single-color unmixing controls being [severely downsampled](/course/community/TRU-OLS/FCSCleanUp.qmd) in order to pass the GitHub size limits)
 :::
 :::
+
+---
 
 ## OLS-Unmixing via Luciernaga
 
@@ -510,6 +647,8 @@ UnmixSuccess <- map(.x=FullStain_GS, .f=Luciernaga_Unmix,
 
 :::
 
+---
+
 ## TRU-OLS Unmixing
 
 ::: {.fragment}
@@ -518,7 +657,11 @@ Within the [TRU-OLS](https://github.com/De-Novo-Research/TRU-OLS) README, we are
 :::
 :::
 
+---
+
 ![](images/TRUOLS_Readme.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -532,6 +675,8 @@ These data.frames are then all converted to matrices, before being passed off to
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 From previous function building [examples](/course/10_Downsampling/index.qmd), we have enough familiarity with the `flowWorkspace` package to figure out how to retrieve and clean up the `exprs()` output in R to fulfill the inputs needed for unstained and full-stained samples to be passed to Julia. We can also use `Luciernaga_SingleColors()` to generate the mixmat data.frame of fluorophore signatures. 
@@ -543,6 +688,8 @@ From previous function building [examples](/course/10_Downsampling/index.qmd), w
 After attempting (and failing) to pass from an R code chunk to a Julia code chunk, I found the implementable approach was to write the data.frames to .csv files, and then via `JuliaCall` package run Julia commands within the R function to carry out the above README suggested steps, and save the output as a .csv file that could be read back into R. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -592,12 +739,15 @@ TRU_OLS_Julia <- function(mixmat, unstained, fullstained,
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With the "R to Julia and back to R" hand-off operational, the main thing left is to provide the function infrastructure in R needed to gather the required inputs, and then once the outputs are received, correctly package them back into a new .fcs file. I modified the [existing function](https://github.com/DavidRach/Luciernaga/blob/main/R/Luciernaga_Unmix.R) infrastructure for  `Luciernaga_Unmix()` used for the OLS unmixing example above, but switching out the OLS unmixing with the `TRU_OLS_Julia()` function we just wrote. 
 :::
 :::
 
+---
 
 ::: {.fragment}
 ```{r}
@@ -701,6 +851,8 @@ TRUOLS_Unmix <- function(x, SCs, Unstained_GS, sample.name, removestrings,
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 With both the main function (and the internal R-Julia handoff function) written and active in our environment, we can now proceed to unmixing. 
@@ -718,15 +870,23 @@ UnmixSuccess <- map(.x=FullStain_GS, .f=TRUOLS_Unmix, SCs=SCs, Unstained_GS=Unst
 
 :::
 
+---
+
 ![](images/JuliaOutput1.png)
 
+---
+
 ![](images/JuliaOutputComplete.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And for a quick sanity check, lets check both the OLS and TRU-OLS files to make sure that the .fcs file formatting worked in practice. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -736,7 +896,11 @@ OLS
 
 ![](images/Gate_OLSCD45.png)
 
+---
+
 ![](images/Gates_OLSTcells.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -744,9 +908,15 @@ TRU-OLS
 :::
 :::
 
+---
+
 ![](images/Gate_TruOLSCD45.png)
 
+---
+
 ![](images/Gates_TRUOLSTcells.png)
+
+---
 
 # Take Away
 
@@ -756,11 +926,15 @@ In this walk-through, we showcased how to install Julia, activate TRU-OLS within
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Obviously, this is an initial implementation, and several areas could use additional improvements. This entire process was single-threaded, and could benefit from parallel computing implementation to take advantage of most computers having multiple cores. Additionally, the use of `JuliaCall` as an intermediate introduces some lag as it gets reactivated on each iteration. 
 :::
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -768,20 +942,19 @@ And this has only been checked on Cytek Aurora files, so its likely some changes
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Regardless, as with all the course code, all the above is AGPL3-0 licensed, and you are free to customize it to your hearts content. We gladly welcome any modifications/contributions to make the above coding examples more robust in the future. 
 :::
 :::
 
-::: {.fragment}
-::: {.callout-tip title="."}
-Hopefully, this lowers the barrier of entry, so that anyone interested in exploring how the TRU-OLS method of unmixing might differ for their own datasets is able to gnerate a quick example for evaluation. 
-:::
-:::
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
+Hopefully, this lowers the barrier of entry, so that anyone interested in exploring how the TRU-OLS method of unmixing might differ for their own datasets is able to gnerate a quick example for evaluation. 
 Cheers!
 David
 :::

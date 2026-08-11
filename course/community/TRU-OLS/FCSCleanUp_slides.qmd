@@ -35,6 +35,8 @@ Consequently we will first gate for singlets, non-RBCs and lymphocyte scatter. O
 :::
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 As always, start by loading the required R packages via the `library()` call. 
@@ -51,6 +53,8 @@ library(purrr)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Next, activate the `Downsampling()` function that was created as part of [Week 10](/course/10_Downsampling/index.qmd) of the course.
@@ -66,6 +70,8 @@ purrr::walk(.x=MyFunctions, .f=source)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -84,6 +90,8 @@ OutputLocation <- file.path("outputs")
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 And proceed to load in the .fcs files to a GatingSet. 
@@ -101,6 +109,8 @@ SFC_GatingSet <- GatingSet(SFC_cytoset)
 ```
 
 :::
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -123,6 +133,8 @@ transform(SFC_GatingSet, MyBiexTransform)
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 Next, we will create gates using the `flowGate` package, as covered during [Week 08](/course/08_WaysToGate/index.qmd#manual---flowgate), specifically via the iteration table.
@@ -141,6 +153,8 @@ GatingTable <- tibble::tribble(
 
 :::
 
+---
+
 ::: {.fragment}
 ::: {.callout-tip title="."}
 We can then run the following line of code, and proceed to sequentially draw the gates via the ShinyApp
@@ -155,11 +169,19 @@ flowGate::gs_apply_gating_strategy(SFC_GatingSet, gating_strategy = GatingTable)
 
 :::
 
+---
+
 ![](images/00_Singlets.png)
+
+---
 
 ![](images/00_NonRBCs.png)
 
+---
+
 ![](images/00_Scatter.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -188,17 +210,31 @@ Plot3 <- Utility_UnityPlot(x="FSC-A", y="SSC-A",
 
 :::
 
+---
+
 ![](images/Singlets1.png)
+
+---
 
 ![](images/Singlets2.png)
 
+---
+
 ![](images/nonRBCs1.png)
+
+---
 
 ![](images/nonRBCs2.png)
 
+---
+
 ![](images/Scatter1.png)
 
+---
+
 ![](images/Scatter2.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -216,7 +252,11 @@ Counts |> filter(Population %in% "scatter")
 
 :::
 
+---
+
 ![](images/00_Counts.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
@@ -234,6 +274,8 @@ purrr::walk(.x=SFC_GatingSet, subset="scatter", .f=Downsampling,
 
 :::
 
+---
+
 # Proceeding
 
 ::: {.fragment}
@@ -242,13 +284,19 @@ The resulting files are now under 5 MB. I proceeded to remove the original ones 
 :::
 :::
 
+---
+
 ![](images/00_FinalDownsampled.png)
+
+---
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
 To return to where you were in the TRU-OLS walk-through, click [here](/course/community/TRU-OLS/index.qmd#ols-unmixing-via-luciernaga)
 :::
 :::
+
+---
 
 ::: {style="text-align: right;"}
 [![AGPL-3.0](https://www.gnu.org/graphics/agplv3-with-text-162x68.png)](https://www.gnu.org/licenses/agpl-3.0.en.html) [![CC BY-SA 4.0](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)

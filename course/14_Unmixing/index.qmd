@@ -15,7 +15,7 @@ toc-depth: 5
 
 For the YouTube livestream schedule, see [here](https://www.youtube.com/@cytometryinr)
 
-For screen-shot slides, click [here](/course/03_InsideFCSFile/slides.qmd)
+For screen-shot slides, click [here](/course/14_Unmixing/index_slides.qmd)
 
 <br>
 
