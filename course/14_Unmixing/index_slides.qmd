@@ -3306,6 +3306,7 @@ Alright, moment of truth. Let's open it in either [Floreada.io](/course/00_Flore
 
 ---
 
+
 ![](images/03_TcellSubsets.png)
 
 ---
@@ -3412,6 +3413,10 @@ One of the first packages that I encountered that implemented unmixing in R was 
 
 For these 2 packages ([flowUnmix](https://github.com/hally166/flowUnmix/tree/main/R), and [Autospectral](https://github.com/DrCytometer/AutoSpectral/tree/master/R)), dive into their GitHub repositories and open their R folder. Check the .R files for any with an "unmixing-something-or-order" style name and examine it. Try reading your way through the code until you encounter the function that actually carries out the unmixing. Look up that functions original package, and check the help file. Take a screenshot, and report back. Feel free to repeat for any unmixing methods of interest (OLS, NNLS, WLS, etc.) 
 :::
+
+---
+
+![](images/TakeAway1.jpg)
 
 ---
 
