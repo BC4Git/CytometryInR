@@ -20,7 +20,7 @@ execute:
 [![AGPL-3.0](https://img.shields.io/badge/license-AGPLv3-blue)](https://www.gnu.org/licenses/agpl-3.0.en.html) [![CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-sa/4.0/)
 :::
 
-For the YouTube livestream schedule, see [here](https://www.youtube.com/@cytometryinr)
+For the YouTube livestream recordings, see [here](https://www.youtube.com/live/xcOMDShottw?si=sDx4QNAM7_2JBT-U&t=179)
 
 For screen-shot slides, click [here](/course/03_InsideFCSFile/slides.qmd)
 
@@ -3358,7 +3358,7 @@ As you saw from the process, the main elements involved are actually processing 
 
 ::: {.fragment}
 ::: {.callout-tip title="."}
-Due to a conference break, we will resume the primary material in a couple weeks looking at algorithms that can help us screen our unmixed .fcs files for instrumental issues arising from fluidic and laser instability. We will also explore some additional comparison metrics in the form of spreading matrices and staining index in the bonus content over the next couple weeks. 
+Next time in the primary course material, we will look at how to evaluate our unmixing outputs, with the following week set to look at various algorithms that can help us screen our unmixed .fcs files for instrumental issues arising from fluidic and laser instability. We will also explore some additional comparison metrics in the form of spreading matrices and staining index in the bonus content over the next couple weeks. 
 :::
 :::
 
