@@ -1,7 +1,7 @@
 ---
 title: "Luciernaga Integration"
 author: "David Rach"
-date: 08-11-2026
+date: 08-19-2026
 format:
   html:
     toc: true
@@ -43,11 +43,11 @@ Plot <- Luciernaga::VisualizeSignatures(columnname="Fluorophore", data=CellFluor
 plotly::ggplotly(Plot)
 ```
 
-Overall, this workflow is representative of the approach taken within most commercial softwares in the steps leading up to unmixing. Unfortunately, relying on a summary measurement (median in this case) often limits what we are able to perceive, and when it comes to the unmixing controls, there is still plenty of additional information that can be gleaned.
+Overall, this workflow is representative of the approach taken within most commercial softwares in the steps leading up to unmixing. Unfortunately, relying on a summary measurement ("median" in this case) often limits what we are able to perceive, and when it comes to the unmixing controls,there remains plenty of additional information that can be gleaned from the individual cells that are present. 
 
 During [Week 12](/course/12_SpectralSignatures/index.qmd#single-color-signatures-from-individual-cells), we showcased the use of the `Luciernaga` packages `LuciernagaIntegration()` wrapper function, which allowed us to identify the tandem degradation from APC-Fire 810 to APC that was occuring in the cell single-color controls (but strangely not the bead single-color control prepared from the same antibody vial). 
 
-In this walk-through, we will take a look at the other 28-fluorophores in the panel, and identify any other frequently encountered patterns that can be found when we look at our unmixing controls with such a granular view. We will also explore how to leverage this information to better inform which signatures we incorporate into the final fluorophore signature matrix for use in [unmixing](/Schedule.qmd#unmixing-in-r) the full-stained samples. 
+In this walk-through, we will take a look at the other 28-fluorophores in the panel, and identify any other frequently encountered patterns that can be found when we look at our unmixing controls with such a granular view. We will also explore how to leverage this information to better inform which signatures we incorporate into the final fluorophore signature matrix for use in [unmixing](/course/14_Unmixing/index.qmd) the full-stained samples. 
 
 # Walk Through
 
@@ -55,7 +55,7 @@ In this walk-through, we will take a look at the other 28-fluorophores in the pa
 
 ### Retrieving GatingSet
 
-We will begin by loading the R packages we need today to our local environment, via the `library()` call. As a [reminder](/course/SDY3080/SignatureMatrices.qmd#checking-package-versions), we will need to have at least `Luciernaga` version 0.99.10 installed to use the functions (for reasons covered during the [last](/course/SDY3080/SignatureMatrices.qmd#checking-package-versions) walk-through). 
+We will begin by loading the R packages we need today to our local environment, via the `library()` call. As a [reminder](/course/SDY3080/SignatureMatrices.qmd#checking-package-versions), we will need to have at least `Luciernaga` version 0.99.10 installed to use the functions (for reasons covered during the [last](/course/SDY3080/SignatureMatrices.qmd#checking-package-versions) bonus walk-through). 
 
 ```{r}
 library(dplyr)
@@ -65,7 +65,7 @@ library(Luciernaga)
 library(ggplot2)
 ```
 
-Next up, specify the storage (currently containing our .fcs files) and output (currently containing our intermediate .gs folder) locations (if you are following the courses organization scheme). 
+Next up, specify the storage (currently containing our .fcs files) and output (currently containing our intermediate .gs folder) locations. If you are following the courses organization scheme, these would be in the "data" and "outputs" folders respectively.  
 
 ```{r}
 StorageLocation <- file.path("course", "SDY3080", "data", "SDY3080")
@@ -75,7 +75,7 @@ OutputLocation <- file.path("course", "SDY3080", "outputs")
 #OutputLocation <- file.path("outputs")
 ```
 
-With this done, lets proceed to load our CellSC_GatingSet back into the local environment from its .gs folder. This would be the "Amplified" version, where the peak detector gates had been created, checked and corrected. 
+With these file paths set up, lets proceed to load our CellSC_GatingSet back into the local environment from its .gs folder. This would be the "Amplified" version, where the peak detector gates had been created, checked and corrected. 
 
 ```{r}
 CellSCPath <- file.path(OutputLocation, "CellsSC_GS_Amplified.gs")
@@ -91,7 +91,7 @@ plot(CellsSC_GatingSet)
 
 ### Assembling Template
 
-Since `LuciernagaIntegration()` wrapper function relies on the use of a template for matching the individual single-color control specimen with the corresponding peak detector gate, we can reasseble it by retrieving the updated metadata using `pData()`. When re-retrieving metaddata from a GatingSet, the metadata columns order may get rearranged, so lets also reorganize the columns into the expected order we previously had. 
+Since `LuciernagaIntegration()` wrapper function relies on the use of a template for matching the individual single-color control specimen with the corresponding peak detector gate, we can reasseble the template by retrieving the updated metadata using `pData()`. When re-retrieving metadata from a GatingSet, the metadata columns order may end up rearranged, so lets also reorganize the columns based on the expected order we previously had them in. 
 
 ```{r}
 Template <- pData(CellsSC_GatingSet)
@@ -118,7 +118,7 @@ KeptCells
 
 ### Rearranging by Detector
 
-Before diving too far in, you may notice our current template is not exactly ordered in terms of peak detector order. The simplest way too fix this would be to provide a vector listing the detectors in the correct order by laser and emission wavelength, `factor()` the column so that correct ordering is recognized, and then use the `dplyr` packages `arrange()` function to shuffle the rows to match the designated order. 
+Before diving too far in, you may notice the rows in our current template are not exactly ordered in terms of the laser and emission wavelength of the respective fluorophores.  We can fix this setting `factor()` on the detector column (providing the correct detector order via the levels argument). At that point, we can use the `dplyr` packages `arrange()` function to re-shuffle the rows to match the designated factor ordering. 
 
 ```{r}
 DetectorOrder <- c("UV1", "UV2", "UV3", "UV4", "UV5", "UV6", "UV7", "UV8",
@@ -139,7 +139,7 @@ KeptCells <- KeptCells |> arrange(Detector)
 KeptCells
 ```
 
-This in turn means when we use base R notation for rows, the fluorophores in our panel will show up sequentially as we work through the panel
+An added benefit of this means we can now use R notation for rows ([1,], [2,], etc.) to sequentially isolate out from the panel GatingSet just the individual fluorophores we want to work with by providing smaller versions of the actual template. 
 
 ```{r}
 KeptCells[1,]
@@ -149,7 +149,7 @@ KeptCells[1,]
 KeptCells[29,]
 ```
 
-With this done, our template is now assembled, and we can proceed. 
+With this tempalate setup now done, we can go ahead and proceed. 
 
 ## Cell Single-Color Controls
 
@@ -164,17 +164,17 @@ Table <- FluorophoreMatrix(data=Panel, NumberDetectors = 64) # Aurora 5-laser
 Table
 ```
 
-An important thing to remember, what we (and our cytometers) perceive as brightness is a combination of
-
-- The fluorophores capacity to efficiently emit photons back when the correct laser shines on it (and also our instruments ability to capture this signal)
+As we start to evaluate fluorophore signatures, an important thing to remember is that what we (and our cytometers) perceive as brightness is a combination of
 
 - The antigen density on the cell surface that our antibody-conjugated fluorophores will bind to. 
 
-- Some additional amount of background autofluorescence (from our cell or bead)
+- The individual fluorophores capacity to emit photons back when the respective laser excites it (as well as our instruments ability to capture this emmitted signal)
 
-- Some additional amount of uncertainty or noise for good measure.
+- Some variable amount of background autofluorescence (from either our cell or bead)
 
-We will likely revisit many of these points in finer detail as we navigate through this walk-through. But for now, lets get started!
+- Some additional amount of uncertainty or noise for good measure from various sources.
+
+As we consider signature variants while profiling the normalized fluorescent signatures of individual cells, its often useful to try to mentually contextualize what we are seeing in light of these factors listed above. We will revisit these points in finer detail as we navigate through this walk-through. But for now, lets get started!
 
 
 ### Ultra Violet
