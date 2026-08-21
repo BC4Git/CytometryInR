@@ -45,7 +45,13 @@ plotly::ggplotly(Plot)
 
 Overall, this workflow is representative of the approach taken within most commercial softwares in the steps leading up to unmixing. Unfortunately, relying on a summary measurement ("median" in this case) often limits what we are able to perceive, and when it comes to the unmixing controls,there remains plenty of additional information that can be gleaned from the individual cells that are present. 
 
-During [Week 12](/course/12_SpectralSignatures/index.qmd#single-color-signatures-from-individual-cells), we showcased the use of the `Luciernaga` packages `LuciernagaIntegration()` wrapper function, which allowed us to identify the tandem degradation from APC-Fire 810 to APC that was occuring in the cell single-color controls (but strangely not the bead single-color control prepared from the same antibody vial). 
+During [Week 12](/course/12_SpectralSignatures/index.qmd#single-color-signatures-from-individual-cells), we showcased the use of the `Luciernaga` packages `LuciernagaIntegration()` wrapper function, which permitted grouping cells based on their individual normalized cell signatures based on shared peaks, of relatively same heights. 
+
+![](images/LuciernagaMechanism.png)
+
+This approach proved useful, as it allowed us to identify the tandem degradation from APC-Fire 810 to APC that was occuring in the cell single-color controls (but strangely not the bead single-color control prepared from the same antibody vial).
+
+![](images/Luciernaga_APCFire810.png)
 
 In this walk-through, we will take a look at the other 28-fluorophores in the panel, and identify any other frequently encountered patterns that can be found when we look at our unmixing controls with such a granular view. We will also explore how to leverage this information to better inform which signatures we incorporate into the final fluorophore signature matrix for use in [unmixing](/course/14_Unmixing/index.qmd) the full-stained samples. 
 
@@ -514,44 +520,49 @@ Ultimately, this was one of the antibody-fluorophore combinations for our panel 
 
 #### BUV661
 
-Continuing with our journey through the UV fluorophores, lets check out the [BUV661](bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv661-mouse-anti-human-v-2-tcr.750056) fluorophore, which was conjugated to [Vδ2](https://en.wikipedia.org/wiki/Gamma_delta_T_cell#Human_V%CE%B42+_T_cells). In the context of the [original study](https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2025.1628145/full), the Vγ9Vδ2 T cells cells were one the main subsets of interest. However, given their frequency can vary person to person, they screened in advanced to make sure the donor used for PBMCs had high enough percentage to use cells as the single-color control. 
+Continuing on, we reach the [BUV661](bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv661-mouse-anti-human-v-2-tcr.750056) fluorophore, which was conjugated to [Vδ2](https://en.wikipedia.org/wiki/Gamma_delta_T_cell#Human_V%CE%B42+_T_cells). For the [original study](https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2025.1628145/full), the Vγ9Vδ2 T cells cells were one the main cell subsets of interest. 
+
+While the antigen is typically expressed highly, we would normally anticipate having bright antibody-fluorophore staining. However, the Vδ2 T cell frequency can vary person to person, which means routine use in a cell single-color unmixing control requires pre-screening donors for one with high enough percentage to make acquisition sufficient bright events feasible. 
 
 ```{r}
 BUV661 <- LuciernagaIntegration(template=KeptCells[5,], gs=CellsSC_GatingSet, GuessSimilar=TRUE)[[1]] # Square brackets to loose list notation
 ```
 
-Lets first take a look at the "LinearSlices_Plot", to see what effect would have been on the signature if we had split the region we had grabbed in our "positive" gate into 10% bins across. 
+As usual, we can check the "LinearSlices_Plot", to see what the effect would have been on the signature if we had split the "positive" gate into 10% bins across. 
 
 ```{r}
 Plot <- BUV661$LinearSlices_Plot
 plotly::ggplotly(Plot)
 ```
 
-
-There is some variation on V7 across the 10% bins, but it is much more reminiscent of what we encountered for BUV563. 
-
-Having noted this, lets check out the `LuciernagaQC()` grouped individual cell normalized signatures output stored under "LuciernagaQC_Signatures". 
+So far, minimal differences across the percentile bins. Lets isntead check the `LuciernagaQC()` output to see if there are any signature variants retrieved when we group individual cell normalized signatures based on shared peak and height. 
 
 ```{r}
 Plot <- BUV661$LuciernagaQC_Signatures
 plotly::ggplotly(Plot)
 ```
 
-Two signatures, slightly different at R1 and R2. Want to guess where the median ends up at?  
+Two signature variants, with slightly different R1/R2 peak heights. When taking the median, where does the "Average" signature end up?
 
 ```{r}
 Plot <- BUV661$LuciernagaQC_AmalgamatedPlot
 plotly::ggplotly(Plot)
 ```
 
-Since this antigen-fluorophore combination appears to be behaving, lets wrap up by checking the average vs. the reference signature. 
+"Average" ends up closer to the signature with the secondary "R2_09" peak. So overall, this antigen-fluorophore combination appears to be behaving. We can wrap up by checking the cosine values. 
 
 ```{r}
 Data <- BUV661$AveragedSignature_Data
 ```
 
 ```{r}
-Plots <- QC_WhatsThis(x="Average", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=TRUE)
+Plots <- QC_WhatsThis(x="UV11_10-R2_08-YG5_04", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=TRUE)
+
+Plots[[1]]
+```
+
+```{r}
+Plots <- QC_WhatsThis(x="UV11_10-R2_09-YG5_04", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=TRUE)
 
 Plots[[1]]
 ```
@@ -561,70 +572,81 @@ plotly::ggplotly(Plots[[2]])
 ```
 
 :::{.callout-tip title="Pass"}
-Overall, a little different compared to the reference signature (likely due to a bit of the residual autofluorescence around V7). We may want to adjust a bit the gate positioning to the right to reduce this contribution, but overall, not particularly far off from where it should be. 
+For our BUV661, only two signature variants, both which match the reference fluorophore (with minor difference in the secondary "R2" peaks height). This minor difference may be due to difference in tandem batch conjugation or instrumental factors, but as long as we are using the same antibody on our full-stained samples as we do our single-color control, we should be okay. 
 :::
 
 #### BUV737
 
-Next up, we have [BUV737](https://www.bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv737-mouse-anti-human-cd183.741866?tab=product_details), conjugated to [CXCR3](https://en.wikipedia.org/wiki/CXCR3). Seeing as it is a ligand, we note before starting that this may be similar scenario as what we anticipated encountering for CD62L or CCR4. 
+Up next, we have [BUV737](https://www.bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv737-mouse-anti-human-cd183.741866?tab=product_details), conjugated to [CXCR3](https://en.wikipedia.org/wiki/CXCR3). Given the ligand, the antigen-fluorophore combination may be expected to have some brightness issues similar to what we saw for [BUV615 CCR4](/course/SDY3080/LuciernagaIntegration.qmd#buv615) 
 
 ```{r}
 BUV737 <- LuciernagaIntegration(template=KeptCells[6,], gs=CellsSC_GatingSet, GuessSimilar=TRUE)[[1]] # Square brackets to loose list notation
 ```
 
-Lets first take a look at the "LinearSlices_Plot", to see what effect would have been on the signature if we had split the region we had grabbed in our "positive" gate into 10% bins across. 
+Lets first take a look at the "LinearSlices_Plot", to see if there would have been an effect on the signature if we had split the "positive" gated region across 10% bins. 
 
 ```{r}
 Plot <- BUV737$LinearSlices_Plot
 plotly::ggplotly(Plot)
 ```
 
-It is immediately obvious we have step-ladder peaks for V7, B3 and UV7, something that we haven't quite seen to this extent for the previous fluorophores. Main thing to note is that the fluorophores two peaks (UV14 and R5) are remaining consistent. This is often what we see for particularly dim antigen-fluorophore combinations where the autofluorescence residual is substantial portion of the final area under the curve. 
+Right off, we notice patterns similar to what we saw for [BUV615 CCR4](/course/SDY3080/LuciernagaIntegration.qmd#buv615), with the main fluorophore peaks ("UV14" and "R5") being shared across 10% bins, but uncertainty ladden step-ladder peaks for "V7", "B3" and "UV7" detectors. 
 
-Lets break out `LuciernagaQC()` to group the individual cell normalized signatures, as stored in the "LuciernagaQC_Signatures" output in the list. 
+Lets break out `LuciernagaQC()` output and see what the grouped individual cell normalized signature variants are up to.
 
 ```{r}
 Plot <- BUV737$LuciernagaQC_Signatures
 plotly::ggplotly(Plot)
 ```
 
-Wait a second, where did the autofluorescence peaks go? Well, there respective regions now look awfully flat, so it looks like after subtraction they ended up with negative values that ended up rounded to 0 (we can raise whether this was correct approach with the package maintainer). 
+We have a fuzzy [caterpillar](https://en.wikipedia.org/wiki/Pyrrharctia_isabella)! At this point, we are getting back way to many signature variants, many of these not well defined (likely due to insufficient number events) which contributes to the fuzzy appearance.  
 
-Regardless, similar to CCR4, the primary detector peak UV14 appears consistent, but the R5 detector appears to similarly be experiencing step ladder, suggestive that the tandem is degrading. 
+![](images/Fuzzy.png)
 
-Lets visualize this same plot in an alternative fashion, checking to see where the median signature ends up by comparison. 
+Lets see if we can at least make out the main signature appearance by checking the `QC_AmalgamatedPlot()` output
 
 ```{r}
 Plot <- BUV737$LuciernagaQC_AmalgamatedPlot
 plotly::ggplotly(Plot)
 ```
 
-Some of the signatures appear erratic (generally typical of when few cells are present to begin with). Lets retrieve the underlying data for this plot, and keep the Average, as well as variants with reasonable appearing minimal and maxinum autofluorescence contribution of the R5 detector
+While "UV14" appears to be fairly shared, "R5" and "B11" appear to be wildly variable in terms of height. This is typical either in situations where the antibody didn't really stain well (ending up with very dim signal, mainly consistent of non-specific staining), or major tandem degradation. 
+
+Let's check "ProportionPlot" and identify the signatures that represent the majority of the cells present
+
+```{r}
+Plot <- BUV737$ProportionPlot
+plotly::ggplotly(Plot)
+```
+
+Not particularly helpful, but if we zoom in, we can find  "UV14_10-R5_06-B11_03", "UV14_10-R5_05-B11_03", "UV14_10-R5_04-B11_03", "UV14_10-R5_04-B11_02" and "UV14_10-R5_03-B11_02" have more than 5% of total cells each. 
+
+Lets retrieve the underlying data for this plot, and select for these. 
 
 ```{r}
 Data <- BUV737$AveragedSignature_Data |>
-   filter(Cluster %in% c("UV14_10-R5_03-B11_00","Average", "UV14_10-R5_07-B11_02"))
+   filter(Cluster %in% c("UV14_10-R5_06-B11_03","UV14_10-R5_05-B11_03", "UV14_10-R5_04-B11_03", "UV14_10-R5_03-B11_02", "Average"))
 ```
 
 Lets pass these individually to `QC_SimilarFluorophores()` and gage the difference. 
 
 ```{r}
-QC_WhatsThis(x="UV14_10-R5_03-B11_00", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE)
+QC_WhatsThis(x="UV14_10-R5_04-B11_03", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE) # 0.92
 ```
 
 ```{r}
-QC_WhatsThis(x="Average", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE)
+QC_WhatsThis(x="Average", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE) # 0.97
 ```
 
 ```{r}
-QC_WhatsThis(x="UV14_10-R5_07-B11_02", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE)
+QC_WhatsThis(x="UV14_10-R5_06-B11_03", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE) # 0.98
 ```
 
-Overall, looking like the average is comparable to the reference control, with the R5 variants being similar to less extents. If we visualized the difference in these angles, we would see the following
+Overall, for these more prevalent signatures, none match the BUV737 reference, ranging from 0.92 to 1.0 in terms of their cosine. Lets plot these angles for reference
 
 ```{r}
 #| code-fold: TRUE
-cos_vals <- c(1, 0.91, 0.97)
+cos_vals <- c(1, 0.92, 0.97, 0.98)
 theta <- acos(cos_vals)
 
 df <- data.frame(
@@ -646,51 +668,44 @@ ggplot(df) +
   theme_bw()
 ```
 
-One thing to remember however, is that due to the rounding of the negatives, this is not necessarily what the signature looks like in practice, as there are negative peaks that would render the fluorophore very unsimilar to the reference had the negative values been left intact. 
-
-Before we go on, lets evaluate the proportion of cells within our positive gated region as distributed across our signature variants
-
-```{r}
-Plot <- BUV737$ProportionPlot
-plotly::ggplotly(Plot)
-```
+Ultimately, this just looks like a mess. Whether its due to a dim antigen-fluorophore combinations or tandem degradation is a story for another day.
 
 :::{.callout-warning}
-So, while degraded products are present, at first glance looking at the proportions, it looks like this fluorophore has enough fluorophore in good shape to allow it to continue. However, as noted, not full story, since the autofluorescence peaks appeared to vanish entirely (do to `LuciernagaQC()` handling of negative values by default) showing limitation to the the generic `LuciernagaIntegration()` approach in this case. 
 
-In the actual panel implementation, as soon as this cell unmixing control was swapped to its bead unmixing control equivalent, panel unmixing substantially improved. 
+For BUV737, this one is an immediate NO! The sheer number of variants with different heights around the secondary and tertiary peaks suggest that the tandem likely degraded. 
+
+Likewise, the step-ladders around the autofluorescence typical peaks result when the antigen-fluorophore combination is not bright enough, resulting in leftover autofluorescence residuals after background subtraction contributing significantly more to the signature shape.
+
+This is also consistent with tandem degradation scenario, since the peaks would not be as bright as they should be to render this leftover residual insignificant compared to the overall signature. 
+
+Additionally, we can't rule out that the antibody clone could also be a bad one, since if there was no binding to the antigen, there would no direct staining, and what we could be gating on might just be the result of non-specific noise, further adding to the dim signal/overall fuzzyness. 
+
+Ultimately, replacing this cell unmixing control for its bead single-color unmixing control is no brainer, and we should check the full-stained sample to see if there is CXCR3 staining after unmixing to determine whether the antibody clone is the root cause or not.
 :::
 
 #### BUV805
 
-And wrapping up our exploration of the UV laser fluorophores, lets check out the [BUV805](bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv805-mouse-anti-human-cd4.612887) fluorophore, which is conjugated to [CD4](https://en.wikipedia.org/wiki/CD4). Given antigen density on a CD4 T cell, this should prove less complicated than the last couple fluors we have encountered.
+And wrapping up our exploration of the UV laser fluorophores, lets check out the [BUV805](bdbiosciences.com/en-us/products/reagents/flow-cytometry-reagents/research-reagents/single-color-antibodies-ruo/buv805-mouse-anti-human-cd4.612887) fluorophore, which is conjugated to [CD4](https://en.wikipedia.org/wiki/CD4). Given antigen density on a CD4 T cell, this should prove less complicated than the mess that was [BUV737 CXCR3](/course/SDY3080/LuciernagaIntegration.qmd#buv737)
 
 ```{r}
 BUV805 <- LuciernagaIntegration(template=KeptCells[7,], gs=CellsSC_GatingSet, GuessSimilar=TRUE)[[1]] # Square brackets to loose list notation
 ```
 
-Lets first take a look at the "LinearSlices_Plot", to see what effect would have been on the signature if we had split the region we had grabbed in our "positive" gate into 10% bins across. 
+Lets first take a look at the "LinearSlices_Plot", to see what effect would have been on the signature if we had split the cells within our "positive" gate into 10% bins across based on brightness. 
 
 ```{r}
 Plot <- BUV805$LinearSlices_Plot
 plotly::ggplotly(Plot)
 ```
 
-Pretty much no difference on the autofluorescence detectors, so very similar to what we saw for BUV496 CD8. Lets check out the `LuciernagaQC()` grouped individual cell normalized signatures output stored under "LuciernagaQC_Signatures". 
+Pretty much no difference on the autofluorescence detectors, so very similar to what we saw for [BUV496 CD8](/course/SDY3080/LuciernagaIntegration.qmd#buv496). Lets check out the `LuciernagaQC()` output to see what happens when we group individual cell normalized signatures based on shared peaks of similar height
 
 ```{r}
 Plot <- BUV805$LuciernagaQC_Signatures
 plotly::ggplotly(Plot)
 ```
 
-Two signatures, one with slightly more autofluorescence residual. Lets visualize this same plot in an alternative fashion, checking to see where the median signature ends up by comparison. 
-
-```{r}
-Plot <- BUV805$LuciernagaQC_AmalgamatedPlot
-plotly::ggplotly(Plot)
-```
-
-And for completionist sake, lets compare the "Average" signature to the reference using `QC_WhatsThis()`
+And we end up with just 1 signature. Lets wrap this up by comparing to the reference. 
 
 ```{r}
 Data <- BUV805$AveragedSignature_Data 
@@ -700,13 +715,8 @@ Data <- BUV805$AveragedSignature_Data
 QC_WhatsThis(x="Average", columnname="Cluster", data=Data, NumberHits=5, NumberDetectors=64, returnPlots=FALSE)
 ```
 
-```{r}
-Plot <- BUV805$ProportionPlot
-plotly::ggplotly(Plot)
-```
-
 :::{.callout-tip title="Pass"}
-Overall, in good shape, although interesting proportion splits across the two signature variants, might be worth adjusting the gate slightly to the right overall. 
+For BUV805, we only retrieved 1 signature, likely due to the antigen-fluorophore combination being a bright one, and the tandem being in good shape. We are good to proceed to the next fluorophore!
 :::
 
 ### Violet
@@ -730,6 +740,10 @@ Due to the sheer number of `plotly` `ggplotly()` plots that would need to be loa
 Due to the sheer number of `plotly` `ggplotly()` plots that would need to be loaded by the website if we visualized everything at once, the walk-through of the "Unstained" signatures has been migrated [here](/course/SDY3080/LuciernagaIntegration_Unstained.qmd). 
 
 # Take Away
+
+In this walk-through (and its subsetted "Laser" chapters), we have worked our way systematically through the unmixing controls (both single-color and unstained) for this 29-color panel, identifying various problematic cell single-colors that could potentially contribute to unmixing issues in the full-stained samples if their average signature was included as part of the unmixing matrix.
+
+We will circle back to these during [Week 15](/Schedule.qmd#evaluating-unmixing) and visualize what kind of unmixing errors they would have introduced compared to a more representative fluorophore signature. 
 
 ![](images/TakeAway4.jpg)
 
