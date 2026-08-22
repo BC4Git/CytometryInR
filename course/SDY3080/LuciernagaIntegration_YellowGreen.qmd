@@ -39,6 +39,8 @@ Due to the sheer number of `plotly` `ggplotly()` plots that would need to be loa
 
 ## Set Up
 
+Attach your R packages to the local environment via the `library()` call. 
+
 ```{r}
 library(dplyr)
 library(purrr)
@@ -46,6 +48,8 @@ library(flowWorkspace)
 library(Luciernaga)
 library(ggplot2)
 ```
+
+Designate your file paths to the storage and output folder locations. 
 
 ```{r}
 #StorageLocation <- file.path("course", "SDY3080", "data", "SDY3080")
@@ -55,16 +59,22 @@ StorageLocation <- file.path("data", "SDY3080")
 OutputLocation <- file.path("outputs")
 ```
 
+Bring in the pre-gated GatingSet object (which was carried out as part of the [Signature Matrices](/course/SDY3080/SignatureMatrices.qmd) walkthrough).
+
 ```{r}
 CellSCPath <- file.path(OutputLocation, "CellsSC_GS_Amplified.gs")
 CellsSC_GatingSet <- load_gs(CellSCPath)
 ```
+
+And bring in the template needed to run the `LuciernagaIntegration()` wrapper function. 
 
 ```{r}
 #| echo: FALSE
 SaveThisTemplateHere <- file.path(OutputLocation, "KeptCells.csv")
 KeptCells <- read.csv(SaveThisTemplateHere, check.names=FALSE)
 ```
+
+And with that, we are set! 
 
 ### YellowGreen
 

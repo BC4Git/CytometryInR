@@ -26,7 +26,7 @@ For screen-shot slides, click [here]()
 
 # Background
 
-Due to the sheer number of `plotly` `ggplotly()` plots that would need to be loaded by the website if we had visualized all the `LuciernagaIntegration()` plots for the 29-fluorophore panel in one webpage, we have broken the exploration of the fluorophore outputs by laser. This walk-through if for the "Violet" laser.
+Due to the sheer number of `plotly` `ggplotly()` interactive plots that would need to be loaded by the website if we had visualized all the `LuciernagaIntegration()` plots for the 29-fluorophore panel in one webpage, we have broken the exploration of the fluorophore outputs by laser. This walk-through if for the "Violet" laser.
 
 - To return to the main walk-through (including UV fluorophores), click [here](/course/SDY3080/LuciernagaIntegration.qmd)
 - For the violet fluorophore walk-through, click [here](/course/SDY3080/LuciernagaIntegration_Violet.qmd)
@@ -39,6 +39,8 @@ Due to the sheer number of `plotly` `ggplotly()` plots that would need to be loa
 
 ## Set Up
 
+Attach your R packages to the local environment via the `library()` call. 
+
 ```{r}
 library(dplyr)
 library(purrr)
@@ -47,18 +49,24 @@ library(Luciernaga)
 library(ggplot2)
 ```
 
-```{r}
-#StorageLocation <- file.path("course", "SDY3080", "data", "SDY3080")
-StorageLocation <- file.path("data", "SDY3080")
+Designate your file paths to the storage and output folder locations. 
 
-#OutputLocation <- file.path("course", "SDY3080", "outputs")
-OutputLocation <- file.path("outputs")
+```{r}
+StorageLocation <- file.path("course", "SDY3080", "data", "SDY3080")
+#StorageLocation <- file.path("data", "SDY3080")
+
+OutputLocation <- file.path("course", "SDY3080", "outputs")
+#OutputLocation <- file.path("outputs")
 ```
+
+Bring in the pre-gated GatingSet object (which was carried out as part of the [Signature Matrices](/course/SDY3080/SignatureMatrices.qmd) walkthrough).
 
 ```{r}
 CellSCPath <- file.path(OutputLocation, "CellsSC_GS_Amplified.gs")
 CellsSC_GatingSet <- load_gs(CellSCPath)
 ```
+
+And bring in the template needed to run the `LuciernagaIntegration()` wrapper function. 
 
 ```{r}
 #| echo: FALSE
@@ -66,31 +74,63 @@ SaveThisTemplateHere <- file.path(OutputLocation, "KeptCells.csv")
 KeptCells <- read.csv(SaveThisTemplateHere, check.names=FALSE)
 ```
 
+And with that, we are set! 
+
 ### Violet
 
-We proceed to the the fluorophores whose primary peak detectors are on the violet laser. One thing to keep in mind is that most cells also have autofluorescence that peaks around V7/V8 detector on a Cytek Aurora, although rarer cell populations may have peaks on V3 or V10. We will circle back to this point should we encounter anything particular odd when profiling grouped normalized signatures of individual cells. 
+![](images/Violet_Laser.png)
+
+Having completed looking at the fluorophores whose primary detector is on the Ultra Violet laser, we can now move on to the Violet laser. One thing to keep in mind is that for many of the cell types we work with will have autofluorescence around the "V7-A" or "V8-A" detector (especially after fixation). 
+
+This is important to keep in mind, because behind the scenes `LuciernagaIntegration()` returns everything, grouped by peak detector, with additional peaks grouped on the basis of shared detector of relative similar height. 
+
+![](images/LuciernagaMechanism.png)
+
+Given that not all cells will stain for the fluorophore, this means we will be getting back both signatures with peaks for the "fluorophore", but also for "autofluorescence". And in the case of the most autofluorescent similar fluorophores (BUV496, BV510, etc.) these might overlap.
+
+Behind the scenes, `LuciernagaQC()` uses an Autofluorescence overlap data.frame ("AFOverlap") to helps handle these overlap cases, removing known autofluorescence detectors from consideration, barring inclusion of the fluorophore with known overlap (like BV510) is present, in which case it will return signatures from that peak. 
+
+```{r}
+AFOverlap <- data.frame(Fluorophore=c("Unstained", "BV510"),
+                               MainDetector=c("UV7-A, V7-A, B3-A", "V7-A"))
+
+AFOverlap
+```
+
+While this approach works well for most cases, we have encountered examples where rare autofluorescences also make an appearance around "V3-A" and "V10-A". Which can cause additional overlaps with other fluorophores, which may require updating of the AFOverlap data.frame. 
+
+So if we encounter an output that is odd, it could be degradation, or it could be an odd cell subset making some interesting molecule. 
+
+And with those words of context/caution, lets get started. 
+
 
 #### BV421
 
-First fluorophore on the Violets is [BV421](https://www.biolegend.com/en-us/products/brilliant-violet-421-anti-human-cd127-il-7ralpha-antibody-7155), conjugated with [CD127](https://en.wikipedia.org/wiki/Interleukin-7_receptor-%CE%B1) for this panel. Lets go ahead and dive right in an see what information we can glean from this cell single-color control.
+Getting us started on the violet laser is the [BV421](https://www.biolegend.com/en-us/products/brilliant-violet-421-anti-human-cd127-il-7ralpha-antibody-7155) fluorophore, conjugated to [CD127](https://en.wikipedia.org/wiki/Interleukin-7_receptor-%CE%B1) for this panel. Lets go ahead and dive right in an see what information we can glean from this cell single-color control.
 
 ```{r}
-#| eval: FALSE
-
-UpdatedAFOVerlap <- data.frame(Fluorophore=c("Unstained", "BV421"),
-                               MainDetector=c("UV7-A, V7-A, B3-A", "V3-A"))
-
+#| eval: TRUE
+#| error: TRUE
 
 BV421 <- LuciernagaIntegration(template=KeptCells[8,], gs=CellsSC_GatingSet,
- GuessSimilar=TRUE, AFOverlap=UpdatedAFOVerlap)[[1]] # Square brackets to loose list notation
-
-plotly::ggplotly(BV421$LinearSlices_Plot)
-
-#devtools::document("/home/david/Documents/Luciernaga")
-#devtools::load_all("/home/david/Documents/Luciernaga")
+ GuessSimilar=TRUE)
 ```
 
-What in the world? .... (this will require a `LuciernagaQC()` deep dive). But essentially, this single-color control was one left accidentally unstained. 
+```{r}
+UpdatedAFOVerlap <- data.frame(Fluorophore=c("Unstained", "BV421"),
+                               MainDetector=c("UV7-A, V7-A, B3-A", "V3-A"))
+```
+
+```{r}
+BV421 <- LuciernagaIntegration(template=KeptCells[8,], gs=CellsSC_GatingSet,
+ GuessSimilar=TRUE, AFOverlap=UpdatedAFOVerlap)[[1]] # Square brackets to loose list notation
+```
+
+```{r}
+plotly::ggplotly(BV421$LinearSlices_Plot)
+```
+
+
 
 
 
